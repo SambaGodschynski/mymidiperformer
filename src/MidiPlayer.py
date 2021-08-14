@@ -23,4 +23,5 @@ class MidiPlayer(object):
 
     def close(self) -> None:
         self.panic()
+        self.midiout.close_port()
         del self.midiout
