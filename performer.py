@@ -1,10 +1,10 @@
 #!/bin/env python3
-from pygame import init, quit
-from pygame import time
 from src.EventProvider import EventProvider
 from src.MidiPlayer import MidiPlayer
 
 last_line = ""
+quit_pygame = None
+
 def console_update(txt: str) -> None:
     global last_line
     print('\b' * len(last_line), end="")
@@ -12,6 +12,10 @@ def console_update(txt: str) -> None:
     last_line = txt
 
 def run_main_loop(args) -> None:
+    from pygame import init, quit
+    from pygame import time
+    global quit_pygame
+    quit_pygame = quit
     init()
     print(f'playing "{args.midifile}"')
     provider = EventProvider(args.midifile)
@@ -50,7 +54,7 @@ if __name__ == '__main__':
     try:
         run_main_loop(args)
     except KeyboardInterrupt:
-        print()
         pass
     finally:
-        quit()
+        print(" ... BYE")
+        quit_pygame()
