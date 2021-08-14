@@ -3,7 +3,6 @@ from src.EventProvider import EventProvider
 from src.MidiPlayer import MidiPlayer
 
 last_line = ""
-quit_pygame = None
 
 def console_update(txt: str) -> None:
     global last_line
@@ -15,18 +14,23 @@ def run_main_loop(args) -> None:
     from pygame import init, quit
     from pygame import time
     global quit_pygame
-    quit_pygame = quit
     init()
     print(f'playing "{args.midifile}"')
     provider = EventProvider(args.midifile)
     player = MidiPlayer(provider, args.device)
     start_offset_millis = time.get_ticks()
     t_millis = 0
-    while True:
-        t_millis = time.get_ticks() - start_offset_millis
-        player.process(t_millis)
-        console_update(str(t_millis / 1000))
-        time.wait(1)
+    try:
+        while True:
+            t_millis = time.get_ticks() - start_offset_millis
+            player.process(t_millis)
+            console_update(str(t_millis / 1000))
+            time.wait(1)
+    except KeyboardInterrupt:
+        pass            
+    finally:
+        quit()
+        player.close()
 
 
 def list_mididevices() -> None:
@@ -50,8 +54,5 @@ if __name__ == '__main__':
         sys.exit(0)
     try:
         run_main_loop(args)
-    except KeyboardInterrupt:
-        pass
     finally:
         print(" ... BYE")
-        quit_pygame()
