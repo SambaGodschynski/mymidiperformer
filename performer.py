@@ -1,3 +1,7 @@
+#!/bin/env python3
+from pygame import init, quit
+from pygame import time
+
 last_line = ""
 def print_(txt: str) -> None:
     global last_line
@@ -6,8 +10,6 @@ def print_(txt: str) -> None:
     last_line = txt
 
 def run_main_loop() -> None:
-    from pygame import init
-    from pygame import time
     init()
     t = 0
     while True:
@@ -36,4 +38,10 @@ if __name__ == '__main__':
     if args.list:
         list_mididevices()
         sys.exit(0)
-    run_main_loop()
+    try:
+        run_main_loop()
+    except KeyboardInterrupt:
+        print()
+        pass
+    finally:
+        quit()
