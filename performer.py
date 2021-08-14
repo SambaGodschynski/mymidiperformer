@@ -45,8 +45,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--device', type=int, help='the device id of the midi taret device')
     parser.add_argument('--list', action='store_const', const=True, help='lists the MIDI devices connected to this machine')
-    parser.add_argument('device', type=int, help='the midi device id')
-    parser.add_argument('midifile', type=str, help='the midi file')
+    parser.add_argument('--midifile', type=str, help='plays a midi file')
     args = parser.parse_args()
     if args.list:
         list_mididevices()
