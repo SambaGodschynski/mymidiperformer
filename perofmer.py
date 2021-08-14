@@ -1,3 +1,10 @@
+last_line = ""
+def print_(txt: str) -> None:
+    global last_line
+    print('\b' * len(last_line), end="")
+    print(txt, end="", flush=True)
+    last_line = txt
+
 def run_main_loop() -> None:
     from pygame import init
     from pygame import time
@@ -5,6 +12,7 @@ def run_main_loop() -> None:
     t = 0
     while True:
         t = time.get_ticks()
+        print_(str(t))
         time.wait(1)
 
 
@@ -28,3 +36,4 @@ if __name__ == '__main__':
     if args.list:
         list_mididevices()
         sys.exit(0)
+    run_main_loop()
