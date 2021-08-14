@@ -15,7 +15,7 @@ def run_main_loop(args) -> None:
     init()
     print(f'playing "{args.midifile}"')
     provider = EventProvider(args.midifile)
-    player = MidiPlayer(provider, 5)
+    player = MidiPlayer(provider, args.device)
     start_offset_millis = time.get_ticks()
     t_millis = 0
     while True:
@@ -41,6 +41,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--device', type=int, help='the device id of the midi taret device')
     parser.add_argument('--list', action='store_const', const=True, help='lists the MIDI devices connected to this machine')
+    parser.add_argument('device', type=int, help='the midi device id')
     parser.add_argument('midifile', type=str, help='the midi file')
     args = parser.parse_args()
     if args.list:
