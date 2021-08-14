@@ -1,4 +1,6 @@
 #!/bin/env python3
+from src.Performance import Performance
+from src.Track import Track
 from src.EventProvider import EventProvider
 from src.MidiPlayer import MidiPlayer
 from src.MidiInput import MidiInput
@@ -11,22 +13,18 @@ def console_update(txt: str) -> None:
     print(txt, end="", flush=True)
     last_line = txt
 
-def run_main_loop(args) -> None:
+def run_main_loop(performance: Performance, args) -> None:
     from pygame import init, quit
     from pygame import time
     global quit_pygame
     init()
-    print(f'playing "{args.midifile}"')
-    provider = EventProvider(args.midifile)
-    player = MidiPlayer(provider, args.outdevice)
+    player = MidiPlayer(performance, args.outdevice, time)
     input = MidiInput(args.indevice)
-    start_offset_millis = time.get_ticks()
-    t_millis = 0
+    input.register_action("start", lambda val: player.start_playback())
+    input.register_action("stop", lambda val: player.stop_playback())
     try:
         while True:
-            t_millis = time.get_ticks() - start_offset_millis
-            player.process(t_millis)
-            console_update(str(t_millis / 1000))
+            player.process()
             time.wait(1)
     except KeyboardInterrupt:
         pass            
@@ -63,11 +61,14 @@ if __name__ == '__main__':
     parser.add_argument('--indevice', type=int, help='the in device id')
     parser.add_argument('--list', action='store_const', const=True, help='lists the MIDI devices connected to this machine')
     parser.add_argument('--midifile', type=str, help='plays a midi file')
+    parser.add_argument('--performance', type=str, help='path to a performance json')
     args = parser.parse_args()
     if args.list:
         list_mididevices()
         sys.exit(0)
     try:
-        run_main_loop(args)
+        performance = Performance()
+        performance.tracks.append(Track(args.midifile))
+        run_main_loop(performance, args)
     finally:
         print(" ... BYE")

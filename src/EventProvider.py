@@ -5,6 +5,7 @@ from sys import maxsize
 MINUTE = 60.0
 ONE_SECOND_MILLIS = 1000.0
 MICROSECONDS_PER_MINUTE = 60000000.0
+END_TICKS = maxsize
 
 class EventIterator:
     def __init__(self, track: MidiTrack) -> None:
@@ -29,10 +30,10 @@ class EventIterator:
     def peek_ticks_of_next(self):
         idx = self.idx + 1
         if idx >= len(self.track):
-            return maxsize
+            return END_TICKS
         event = self.track[idx]
         return event.time + self.ticks if hasattr(event, 'time') else self.ticks
-            
+        
         
 
 class EventProvider(object):
@@ -42,6 +43,7 @@ class EventProvider(object):
         self.bpm = 120
         self.ppq = self.file.ticks_per_beat
         self.iterators = [self.__get_events(track) for track in self.file.tracks]
+        self.length_millis = self.file.length * 1000
     
     def millis_to_tick(self, millis: float) -> float:
         return millis * self.bpm * self.ppq / (MINUTE * ONE_SECOND_MILLIS)
