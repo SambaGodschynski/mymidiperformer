@@ -38,10 +38,14 @@ class Performance(object):
 
     def load_json(self, path) -> None:
         from json import loads
+        from os import path as ospath
         text = ''
         with open(path, 'r') as file:
             text = file.read()
         json = loads(text)
+        json_dir = ospath.dirname(path)
         for json_track in json["tracks"]:
-            track = Track(json_track["file"])
+            midifile = json_track["file"]
+            midifile = ospath.normpath(ospath.join(json_dir, midifile))
+            track = Track(midifile)
             self.tracks.append(track)
