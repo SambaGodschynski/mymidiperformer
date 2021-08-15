@@ -62,6 +62,50 @@ def list_mididevices() -> None:
         print(f'{idx}: {port}')        
 
 
+def find_midi_output(name) -> int:
+    from rtmidi import MidiOut
+    midiout = MidiOut()
+    ports = midiout.get_ports()
+    for idx, port in enumerate(ports):
+        if str(port).find(name) >= 0:
+            return idx
+    return None
+
+def find_midi_input(name) -> int:
+    from rtmidi import MidiIn
+    midiins = MidiIn()
+    ports = midiins.get_ports()
+    for idx, port in enumerate(ports):
+        if str(port).find(name) >= 0:
+            return idx
+    return None
+
+def get_in_and_out(agrs):
+    import config
+    indevice_idx = None
+    outdevice_idx = None
+    if args.indevice != None:
+        indevice_idx = args.indevice
+    else:
+        indevice_idx = find_midi_input(config.InputDevice)
+    if args.outdevice != None:
+        outdevice_idx = args.outdevice
+    else:
+        outdevice_idx = find_midi_input(config.OutputDevice)
+    return indevice_idx, outdevice_idx
+
+def wait_for_devices(args):
+    from time import sleep
+    indevice_idx = None
+    outdevice_idx = None
+    while True:
+        indevice_idx, outdevice_idx = get_in_and_out(args)
+        if indevice_idx is not None and outdevice_idx is not None:
+            break
+        sleep(5)
+    return indevice_idx, outdevice_idx
+    
+
 if __name__ == '__main__':
     import argparse
     import sys
@@ -77,6 +121,9 @@ if __name__ == '__main__':
         list_mididevices()
         sys.exit(0)
     try:
+        indevice_idx, outdevice_idx = wait_for_devices(args)
+        args.indevice = indevice_idx
+        args.outdevice = outdevice_idx
         performance_json_file = args.performance
         performance = Performance()
         if performance_json_file != None:
