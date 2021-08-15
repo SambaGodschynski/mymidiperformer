@@ -51,6 +51,13 @@ class EventProvider(object):
     def __get_events(self, track: MidiTrack):
         return iter(EventIterator(track))
 
+    def seek(self, position_millis: float) -> None:
+        self.iterators = [self.__get_events(track) for track in self.file.tracks]
+        if position_millis == 0:
+            return
+        # consume events before position
+        for x in self.get_next_events(position_millis): pass
+
     def handle_event(self, ev: Message) -> None:
         if not ev.is_meta:
             return

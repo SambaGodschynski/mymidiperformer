@@ -20,11 +20,16 @@ def run_main_loop(performance: Performance, args) -> None:
     init()
     player = MidiPlayer(performance, args.outdevice, time)
     input = MidiInput(args.indevice)
+    input.verbose = args.verbose
     input.register_action("start", lambda val: player.start_playback())
     input.register_action("stop", lambda val: player.stop_playback())
+    input.register_action("next", lambda val: player.next())
+    input.register_action("prev", lambda val: player.prev())
     try:
         while True:
-            player.process()
+            if player.is_playing:
+                player.process()
+                console_update(str(player.played_millis/1000))
             time.wait(1)
     except KeyboardInterrupt:
         pass            
@@ -62,6 +67,7 @@ if __name__ == '__main__':
     parser.add_argument('--list', action='store_const', const=True, help='lists the MIDI devices connected to this machine')
     parser.add_argument('--midifile', type=str, help='plays a midi file')
     parser.add_argument('--performance', type=str, help='path to a performance json')
+    parser.add_argument('--verbose', action='store_const', const=True, help='verbose mode')
     args = parser.parse_args()
     if args.list:
         list_mididevices()

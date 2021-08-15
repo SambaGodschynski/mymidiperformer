@@ -18,6 +18,7 @@ class MidiPlayer(object):
         self.time_provider = time_provider
         self.played_millis: int = 0
         self.track_end_at_millis = 0
+        self.loop_begin_millis = None
 
     def panic(self):
         for ch in range(0, 15):
@@ -51,6 +52,39 @@ class MidiPlayer(object):
         self.is_playing = False
         self.panic()     
 
+    def seek(self, position_millis: float) -> None:
+        self.event_provider.seek(position_millis)
+        self.timestamp = self.time_provider.get_ticks() - position_millis
+
+    def handle_beginloop_message(self, msg):
+        self.loop_begin_millis = self.played_millis
+
+    def handle_endloop_message(self, msg):
+        if self.loop_begin_millis == None:
+            return
+        self.seek(self.loop_begin_millis)
+
+    def handle_meta_message(self, msg):
+        if msg.type == 'cue_marker':
+            if msg.text == 'begin loop':
+                self.handle_beginloop_message(msg)
+            if msg.text == 'end loop':
+                self.handle_endloop_message(msg)
+
+    @property
+    def is_looping(self):
+        return self.is_playing and self.loop_begin_millis != None
+
+    def exit_loop(self):
+        self.loop_begin_millis = None
+
+    def next(self):
+        if self.is_looping:
+            self.exit_loop()
+    
+    def prev(self):
+        pass
+
     def process(self) -> None:
         if self.is_playing == False:
             return
@@ -61,5 +95,6 @@ class MidiPlayer(object):
             message: Message = x
             bytes = message.bytes()
             if message.is_meta:
+                self.handle_meta_message(message)
                 continue
             self.midiout.send_message(bytes)        
