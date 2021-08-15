@@ -1,5 +1,5 @@
 from rtmidi import MidiIn
-from inputConfig import InputMap
+from config import InputMap
 
 class MidiInput(object):
     def __init__(self, device_id: int) -> None:
