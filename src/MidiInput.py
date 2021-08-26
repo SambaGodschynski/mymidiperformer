@@ -14,15 +14,18 @@ class MidiInput(object):
         return f'{message[0]}.{message[1]}', message[2]
 
     def __call__(self, event, data=None) -> None:
-        key, value = self.__keyvalue(event[0])
-        if self.verbose:
-            print(f"{key} -> {value}")
-        if key not in InputMap:
-            return
-        action = InputMap[key]
-        if action not in self.registred_actions:
-            return
-        self.registred_actions[action](value)
+        try:
+            key, value = self.__keyvalue(event[0])
+            if self.verbose:
+                print(f"{key} -> {value}")
+            if key not in InputMap:
+                return
+            action = InputMap[key]
+            if action not in self.registred_actions:
+                return
+            self.registred_actions[action](value)
+        except:
+            pass
 
     def close(self):
         self.midiin.close_port()

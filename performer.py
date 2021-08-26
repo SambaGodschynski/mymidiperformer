@@ -1,4 +1,5 @@
 #!/bin/env python3
+from argparse import ArgumentError
 from src.Performance import Performance
 from src.Track import Track
 from src.EventProvider import EventProvider
@@ -13,7 +14,7 @@ def console_update(txt: str) -> None:
     print(txt, end="", flush=True)
     last_line = txt
 
-def trigger_on_val(trigger_val: int, val: int, f):
+def trigger_on_val_gt(trigger_val: int, val: int, f):
     if (val == trigger_val):
         f()
 
@@ -25,10 +26,10 @@ def run_main_loop(performance: Performance, args) -> None:
     player = MidiPlayer(performance, args.outdevice, time)
     input = MidiInput(args.indevice)
     input.verbose = args.verbose
-    input.register_action("start", lambda val: trigger_on_val(0, val, player.start_playback))
-    input.register_action("stop", lambda val: trigger_on_val(0, val, player.stop_playback))
-    input.register_action("next", lambda val: trigger_on_val(127, val, player.next))
-    input.register_action("prev", lambda val: trigger_on_val(127, val, player.prev))
+    input.register_action("start", lambda val: trigger_on_val_gt(0, val, player.start_playback))
+    input.register_action("stop", lambda val: trigger_on_val_gt(0, val, player.stop_playback))
+    input.register_action("next", lambda val: trigger_on_val_gt(30, val, player.next))
+    input.register_action("prev", lambda val: trigger_on_val_gt(30, val, player.prev))
     try:
         while True:
             if player.is_playing:
@@ -105,6 +106,7 @@ def wait_for_devices(args):
         sleep(5)
     return indevice_idx, outdevice_idx
     
+class ProgramArgException(Exception): pass
 
 if __name__ == '__main__':
     import argparse
@@ -125,6 +127,8 @@ if __name__ == '__main__':
         args.indevice = indevice_idx
         args.outdevice = outdevice_idx
         performance_json_file = args.performance
+        if performance_json_file == None:
+            raise ProgramArgException()
         performance = Performance()
         if performance_json_file != None:
             performance.load_json(performance_json_file)
@@ -132,5 +136,6 @@ if __name__ == '__main__':
         if midi_file != None:
             performance.tracks.append(Track(args.midifile))
         run_main_loop(performance, args)
-    finally:
         print(" ... BYE")
+    except ProgramArgException as argEx:
+        parser.print_help()
