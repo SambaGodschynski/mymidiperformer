@@ -5,8 +5,8 @@ InputDevice = 'Launchkey MK2 49 MIDI 1'
 
 # event array [153, 40, 50] => "153.40", no whitespaces
 InputMap = {
-    "176.114": "stop",
-    "176.115": "start",
-    "176.113": "next",
-    "176.112": "prev"
+    "128.62": "stop",  #TODO add vel values, for now these are hardcoded
+    "128.64": "start",
+    "144.60": "next",
+    "144.59": "prev"
 }
