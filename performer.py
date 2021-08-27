@@ -23,7 +23,7 @@ def trigger_on_val_gt(trigger_val: int, val: int, f):
     if (val == trigger_val):
         f()
 
-def on_sigint(): 
+def on_sigint(unusedx, unusedy): 
     global main_loop_running
     main_loop_running = False 
 
