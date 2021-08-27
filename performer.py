@@ -20,7 +20,7 @@ def console_update(txt: str) -> None:
     last_line = txt
 
 def trigger_on_val_gt(trigger_val: int, val: int, f):
-    if (val == trigger_val):
+    if (val >= trigger_val):
         f()
 
 def on_sigint(unusedx, unusedy): 
