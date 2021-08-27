@@ -19,6 +19,10 @@ def console_update(txt: str) -> None:
     print(txt, end="", flush=True)
     last_line = txt
 
+def trigger_on_val_eq(trigger_val: int, val: int, f):
+    if (val == trigger_val):
+        f()
+
 def trigger_on_val_gt(trigger_val: int, val: int, f):
     if (val >= trigger_val):
         f()
@@ -36,8 +40,8 @@ def run_main_loop(performance: Performance, args) -> None:
     player = MidiPlayer(performance, args.outdevice, time)
     input = MidiInput(args.indevice)
     input.verbose = args.verbose
-    input.register_action("start", lambda val: trigger_on_val_gt(0, val, player.start_playback))
-    input.register_action("stop", lambda val: trigger_on_val_gt(0, val, player.stop_playback))
+    input.register_action("start", lambda val: trigger_on_val_eq(0, val, player.start_playback))
+    input.register_action("stop", lambda val: trigger_on_val_eq(0, val, player.stop_playback))
     input.register_action("next", lambda val: trigger_on_val_gt(30, val, player.next))
     input.register_action("prev", lambda val: trigger_on_val_gt(30, val, player.prev))
     signal.signal(signal.SIGINT, on_sigint)
