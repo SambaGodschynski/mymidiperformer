@@ -1,10 +1,15 @@
 #!/bin/env python3
 from argparse import ArgumentError
+
+import pygame
 from src.Performance import Performance
 from src.Track import Track
 from src.EventProvider import EventProvider
 from src.MidiPlayer import MidiPlayer
 from src.MidiInput import MidiInput
+import signal
+
+main_loop_running = True
 
 last_line = ""
 
@@ -18,9 +23,14 @@ def trigger_on_val_gt(trigger_val: int, val: int, f):
     if (val == trigger_val):
         f()
 
+def on_sigint(): 
+    global main_loop_running
+    main_loop_running = False 
+
 def run_main_loop(performance: Performance, args) -> None:
     from pygame import init, quit
     from pygame import time
+    
     global quit_pygame
     init()
     player = MidiPlayer(performance, args.outdevice, time)
@@ -30,8 +40,11 @@ def run_main_loop(performance: Performance, args) -> None:
     input.register_action("stop", lambda val: trigger_on_val_gt(0, val, player.stop_playback))
     input.register_action("next", lambda val: trigger_on_val_gt(30, val, player.next))
     input.register_action("prev", lambda val: trigger_on_val_gt(30, val, player.prev))
+    signal.signal(signal.SIGINT, on_sigint)
+    signal.signal(signal.SIGTERM, on_sigint)
+    
     try:
-        while True:
+        while main_loop_running:
             if player.is_playing:
                 player.process()
                 console_update(str(player.played_millis/1000))
@@ -39,9 +52,9 @@ def run_main_loop(performance: Performance, args) -> None:
     except KeyboardInterrupt:
         pass            
     finally:
-        quit()
         player.close()
         input.close()
+        quit()
 
 
 def list_mididevices() -> None:
@@ -99,7 +112,7 @@ def wait_for_devices(args):
     from time import sleep
     indevice_idx = None
     outdevice_idx = None
-    while True:
+    while main_loop_running:
         indevice_idx, outdevice_idx = get_in_and_out(args)
         if indevice_idx is not None and outdevice_idx is not None:
             break
@@ -123,12 +136,12 @@ if __name__ == '__main__':
         list_mididevices()
         sys.exit(0)
     try:
+        performance_json_file = args.performance
+        if performance_json_file == None:
+            raise ProgramArgException()        
         indevice_idx, outdevice_idx = wait_for_devices(args)
         args.indevice = indevice_idx
         args.outdevice = outdevice_idx
-        performance_json_file = args.performance
-        if performance_json_file == None:
-            raise ProgramArgException()
         performance = Performance()
         if performance_json_file != None:
             performance.load_json(performance_json_file)
