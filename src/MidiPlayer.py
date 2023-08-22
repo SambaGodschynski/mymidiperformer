@@ -67,6 +67,7 @@ class MidiPlayer(object):
         if self.player_process.poll() == None:
             return
         self.player_process = None
+        self.__set_next_track(True)
 
     def process(self):
         self.check_if_player_process_active()
