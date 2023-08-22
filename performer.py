@@ -7,6 +7,7 @@ from src.MidiPlayer import MidiPlayer
 from src.MidiInput import MidiInput
 import signal
 import time
+import config
 
 main_loop_running = True
 
@@ -34,10 +35,10 @@ def run_main_loop(performance: Performance, args) -> None:
     player = MidiPlayer(performance, args.outdevice)
     input = MidiInput(args.indevice)
     input.verbose = args.verbose
-    input.register_action("start", lambda val: trigger_on_val_eq(0, val, player.start_playback))
-    input.register_action("stop", lambda val: trigger_on_val_eq(0, val, player.stop_playback))
-    input.register_action("next", lambda val: trigger_on_val_gt(30, val, player.next))
-    input.register_action("prev", lambda val: trigger_on_val_gt(30, val, player.prev))
+    input.register_action("start", lambda val: trigger_on_val_eq(config.TriggerVelocity, val, player.start_playback))
+    input.register_action("stop", lambda val: trigger_on_val_eq(config.TriggerVelocity, val, player.stop_playback))
+    input.register_action("next", lambda val: trigger_on_val_eq(config.TriggerVelocity, val, player.next))
+    input.register_action("prev", lambda val: trigger_on_val_eq(config.TriggerVelocity, val, player.prev))
     signal.signal(signal.SIGINT, on_sigint)
     signal.signal(signal.SIGTERM, on_sigint)
     
@@ -91,7 +92,6 @@ def find_midi_input(name) -> int:
     return None
 
 def get_in_and_out(agrs):
-    import config
     indevice_idx = None
     outdevice_idx = None
     if args.indevice != None:
