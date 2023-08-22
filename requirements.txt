@@ -1,3 +1,2 @@
 python-rtmidi
 mido
-pygame

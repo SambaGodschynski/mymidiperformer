@@ -1,13 +1,12 @@
 #!/bin/env python3
 from argparse import ArgumentError
 
-import pygame
 from src.Performance import Performance
 from src.Track import Track
-from src.EventProvider import EventProvider
 from src.MidiPlayer import MidiPlayer
 from src.MidiInput import MidiInput
 import signal
+import time
 
 main_loop_running = True
 
@@ -32,12 +31,7 @@ def on_sigint(unusedx, unusedy):
     main_loop_running = False 
 
 def run_main_loop(performance: Performance, args) -> None:
-    from pygame import init, quit
-    from pygame import time
-    
-    global quit_pygame
-    init()
-    player = MidiPlayer(performance, args.outdevice, time)
+    player = MidiPlayer(performance, args.outdevice)
     input = MidiInput(args.indevice)
     input.verbose = args.verbose
     input.register_action("start", lambda val: trigger_on_val_eq(0, val, player.start_playback))
@@ -49,12 +43,10 @@ def run_main_loop(performance: Performance, args) -> None:
     
     try:
         while main_loop_running:
-            if player.is_playing:
-                player.process()
-                console_update(str(player.played_millis/1000))
-            time.wait(1)
+            player.process()
+            time.sleep(0.2)
     except KeyboardInterrupt:
-        pass            
+        pass
     finally:
         player.close()
         input.close()
@@ -119,6 +111,7 @@ def wait_for_devices(args):
     while main_loop_running:
         indevice_idx, outdevice_idx = get_in_and_out(args)
         if indevice_idx is not None and outdevice_idx is not None:
+            print("devices found")
             break
         sleep(5)
     return indevice_idx, outdevice_idx
